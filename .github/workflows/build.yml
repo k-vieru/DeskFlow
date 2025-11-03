@@ -28,7 +28,7 @@ jobs:
     - name: Build React app
       run: npm run build
 
-    - name: Build Tauri app
+    - name: Build Tauri app for Windows
       run: npx tauri build
 
     - name: Upload Windows App
@@ -51,6 +51,11 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
+    - name: Setup Rust (macOS)
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        echo "##[add-path]$HOME/.cargo/bin"
+
     - name: Install dependencies
       run: npm install
 
@@ -60,7 +65,7 @@ jobs:
     - name: Build React app
       run: npm run build
 
-    - name: Build Tauri app
+    - name: Build Tauri app for macOS
       run: npx tauri build
 
     - name: Upload macOS App
