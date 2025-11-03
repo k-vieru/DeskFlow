@@ -51,22 +51,28 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
-    - name: Setup Rust (macOS)
+    - name: Install Rust and needed dependencies
       run: |
+        # Install Rust using rustup
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        source $HOME/.cargo/env
+        
+        # Verify installation
+        rustc --version
+        cargo --version
 
     - name: Install dependencies
-      run: npm install
-
-    - name: Install Tauri CLI
-      run: npm install @tauri-apps/cli
+      run: |
+        npm install
+        npm install @tauri-apps/cli
 
     - name: Build React app
       run: npm run build
 
     - name: Build Tauri app for macOS
-      run: npx tauri build
+      run: |
+        source $HOME/.cargo/env
+        npx tauri build
 
     - name: Upload macOS App
       uses: actions/upload-artifact@v4
