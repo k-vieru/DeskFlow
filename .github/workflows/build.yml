@@ -1,0 +1,70 @@
+name: Build DeskFlow
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    name: Build Windows App
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install Tauri CLI
+      run: npm install @tauri-apps/cli
+
+    - name: Build React app
+      run: npm run build
+
+    - name: Build Tauri app
+      run: npx tauri build
+
+    - name: Upload Windows App
+      uses: actions/upload-artifact@v4
+      with:
+        name: DeskFlow-Windows
+        path: src-tauri/target/release/bundle/
+
+  build-macos:
+    runs-on: macos-latest
+    name: Build macOS App
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install Tauri CLI
+      run: npm install @tauri-apps/cli
+
+    - name: Build React app
+      run: npm run build
+
+    - name: Build Tauri app
+      run: npx tauri build
+
+    - name: Upload macOS App
+      uses: actions/upload-artifact@v4
+      with:
+        name: DeskFlow-macOS
+        path: src-tauri/target/release/bundle/
