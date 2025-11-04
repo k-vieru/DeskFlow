@@ -25,10 +25,7 @@
         "closable": true,
         "fullscreen": false,
         "maximized": true,
-        "center": true,
-        "decorations": true,
-        "transparent": false,
-        "alwaysOnTop": false
+        "center": true
       }
     ],
     "security": {
@@ -47,30 +44,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "macOS": {
-      "frameworks": [],
-      "minimumSystemVersion": "10.13",
-      "exceptionDomain": "",
-      "signing": null
-    },
-    "windows": {
-      "certificateThumbprint": null,
-      "digestAlgorithm": "sha256",
-      "timestampUrl": ""
-    },
-    "linux": {
-      "deb": {
-        "depends": []
-      }
-    }
-  },
-  "plugins": {
-    "updater": {
-      "active": false,
-      "endpoints": [],
-      "dialog": true,
-      "pubkey": ""
-    }
+    ]
   }
 }
