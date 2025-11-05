@@ -20,10 +20,9 @@
         "maxWidth": 1920,
         "maxHeight": 1080,
         "resizable": true,
-        "maximizable": false,
         "minimizable": true,
         "closable": true,
-        "fullscreen": false,
+        "fullscreen": true,
         "maximized": true,
         "center": true
       }
