@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Download, TrendingUp, CheckCircle, Clock, Users, Target, RefreshCw } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { motion } from 'motion/react';
 import {
   BarChart,
   Bar,
@@ -526,21 +527,35 @@ export function Reports({ accessToken, currentUserId }: ReportsProps) {
       {/* Stats Cards */}
       <div className="px-12 pt-8">
         <div className="grid grid-cols-4 gap-4 mb-6">
-          {stats.map((stat) => {
+          {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.label} className="p-4 bg-[#f8f9fb] dark:bg-[#252930] border-[#e8ecf1] dark:border-[#3a3f4a] hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: stat.color }}>
-                    <Icon className="w-5 h-5 text-white" />
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: index * 0.08, duration: 0.25, ease: "easeOut" }}
+                whileHover={{ y: -2, scale: 1.015, transition: { duration: 0.15 } }}
+              >
+                <Card className="p-4 bg-[#f8f9fb] dark:bg-[#252930] border-[#e8ecf1] dark:border-[#3a3f4a] hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-3">
+                    <motion.div 
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: index * 0.1 + 0.2, type: "spring", stiffness: 200 }}
+                      className="w-10 h-10 rounded-lg flex items-center justify-center" 
+                      style={{ backgroundColor: stat.color }}
+                    >
+                      <Icon className="w-5 h-5 text-white" />
+                    </motion.div>
+                    <Badge variant="outline" className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
+                      {stat.change}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
-                    {stat.change}
-                  </Badge>
-                </div>
-                <div className="text-2xl text-gray-900 dark:text-white mb-1">{stat.value}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</div>
-              </Card>
+                  <div className="text-2xl text-gray-900 dark:text-white mb-1">{stat.value}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</div>
+                </Card>
+              </motion.div>
             );
           })}
         </div>

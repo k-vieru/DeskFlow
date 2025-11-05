@@ -288,36 +288,103 @@ html {
   font-size: var(--font-size);
 }
 
+/* Color utilities for task accent bars */
+@layer utilities {
+  .bg-sky {
+    background-color: var(--color-sky);
+  }
+  
+  .bg-lavender {
+    background-color: var(--color-lavender);
+  }
+  
+  .bg-mint {
+    background-color: var(--color-mint);
+  }
+  
+  .bg-peach {
+    background-color: var(--color-peach);
+  }
+  
+  .bg-rose {
+    background-color: var(--color-rose);
+  }
+  
+  .bg-lemon {
+    background-color: var(--color-lemon);
+  }
+  
+  .bg-coral {
+    background-color: var(--color-coral);
+  }
+  
+  .bg-teal {
+    background-color: var(--color-teal);
+  }
+  
+  .bg-violet {
+    background-color: var(--color-violet);
+  }
+  
+  .bg-amber {
+    background-color: var(--color-amber);
+  }
+  
+  .bg-indigo {
+    background-color: var(--color-indigo);
+  }
+  
+  .bg-emerald {
+    background-color: var(--color-emerald);
+  }
+  
+  .bg-pink {
+    background-color: var(--color-pink);
+  }
+  
+  .bg-cyan {
+    background-color: var(--color-cyan);
+  }
+  
+  .bg-orange {
+    background-color: var(--color-orange);
+  }
+  
+  .bg-purple {
+    background-color: var(--color-purple);
+  }
+}
+
 /* Button Animations */
 @layer utilities {
   .animate-button {
-    @apply transition-all duration-200 ease-in-out;
+    @apply transition-all duration-150 ease-out;
   }
   
   .animate-button:hover {
-    @apply transform scale-105;
+    @apply transform scale-[1.015];
   }
   
   .animate-button:active {
-    @apply transform scale-95;
+    @apply transform scale-[0.98];
   }
   
   .animate-card-hover {
-    @apply transition-all duration-300 ease-in-out;
+    @apply transition-all duration-200 ease-out;
   }
   
   .animate-card-hover:hover {
-    @apply transform translate-y-[-4px] shadow-lg;
+    @apply transform translate-y-[-2px] shadow-lg;
   }
   
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn 0.2s ease-out;
   }
   
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(6px);
     }
     to {
       opacity: 1;
@@ -326,13 +393,13 @@ html {
   }
   
   .animate-slide-in {
-    animation: slideIn 0.4s ease-out;
+    animation: slideIn 0.25s ease-out;
   }
   
   @keyframes slideIn {
     from {
       opacity: 0;
-      transform: translateX(-20px);
+      transform: translateX(-15px);
     }
     to {
       opacity: 1;

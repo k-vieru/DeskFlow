@@ -122,7 +122,7 @@ export function LoginPage({ onLogin, onRegister }: LoginPageProps) {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] text-white transition-all duration-200 hover:scale-[1.02]"
+                  className="w-full h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] text-white transition-all duration-150 ease-out"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Logging in...' : 'Login'}
@@ -188,7 +188,7 @@ export function LoginPage({ onLogin, onRegister }: LoginPageProps) {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] text-white transition-all duration-200 hover:scale-[1.02]"
+                  className="w-full h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] text-white transition-all duration-150 ease-out"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Registering...' : 'Register'}

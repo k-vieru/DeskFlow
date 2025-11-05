@@ -25,6 +25,7 @@ import { TeamManagement } from './TeamManagement';
 import { ProjectInvitationPopup } from './ProjectInvitationPopup';
 import { toast } from 'sonner@2.0.3';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Task {
   id: string;
@@ -92,6 +93,21 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
     { id: 'purple', label: 'Purple', class: 'bg-purple' },
   ];
 
+  // Helper function to ensure unique task IDs
+  const ensureUniqueIds = (tasks: Task[]): Task[] => {
+    const seenIds = new Set<string>();
+    return tasks.map(task => {
+      if (seenIds.has(task.id)) {
+        // Generate a new unique ID if duplicate found
+        const newId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        console.warn(`Duplicate task ID found: ${task.id}, replacing with: ${newId}`);
+        return { ...task, id: newId };
+      }
+      seenIds.add(task.id);
+      return task;
+    });
+  };
+
   // Fetch tasks function (extracted so it can be used by invitation popup)
   const fetchTasks = async () => {
     if (!accessToken || !selectedProjectId) {
@@ -114,9 +130,9 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
         const tasksData = data.tasks;
         
         setColumns([
-          { id: 'todo', title: 'To Do', tasks: tasksData.todo || [] },
-          { id: 'in-progress', title: 'In Progress', tasks: tasksData['in-progress'] || [] },
-          { id: 'done', title: 'Done', tasks: tasksData.done || [] },
+          { id: 'todo', title: 'To Do', tasks: ensureUniqueIds(tasksData.todo || []) },
+          { id: 'in-progress', title: 'In Progress', tasks: ensureUniqueIds(tasksData['in-progress'] || []) },
+          { id: 'done', title: 'Done', tasks: ensureUniqueIds(tasksData.done || []) },
         ]);
       }
     } catch (error) {
@@ -170,10 +186,22 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
 
         if (projectsResponse.ok) {
           const projectsData = await projectsResponse.json();
+          console.log('All projects:', projectsData.projects);
+          console.log('Looking for project ID:', selectedProjectId);
           const currentProject = projectsData.projects?.find((p: any) => p.id === selectedProjectId);
           if (currentProject) {
+            console.log('Found current project:', currentProject);
+            console.log('Project ownerId:', currentProject.ownerId);
             setProjectOwnerId(currentProject.ownerId);
+          } else {
+            console.log('Current project not found!');
+            console.log('Available project IDs:', projectsData.projects?.map((p: any) => p.id));
+            // If project not found, reset ownerId
+            setProjectOwnerId(null);
           }
+        } else {
+          console.error('Failed to fetch projects:', projectsResponse.status);
+          setProjectOwnerId(null);
         }
       } catch (error) {
         console.error('Error fetching project members:', error);
@@ -280,33 +308,54 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
   };
 
   const handleAddTask = async () => {
-    if (!newTask.title.trim()) return;
+    try {
+      console.log('handleAddTask called');
+      if (!newTask.title.trim()) {
+        console.log('No title, returning');
+        toast.error('Please enter a task title');
+        return;
+      }
 
-    const assignedMember = projectMembers.find(m => m.id === newTask.assignedTo);
+      console.log('Creating task with data:', newTask);
+      const assignedMember = projectMembers.find(m => m.id === newTask.assignedTo);
 
-    const task: Task = {
-      id: Date.now().toString(),
-      title: newTask.title,
-      description: newTask.description || undefined,
-      dueDate: newTask.dueDate || undefined,
-      assignedTo: newTask.assignedTo || undefined,
-      assignedToName: assignedMember?.name,
-      projectId: selectedProjectId || undefined,
-      color: newTask.color || 'sky',
-    };
+      // Generate a truly unique ID
+      const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`;
 
-    const newColumns = columns.map(col => 
-      col.id === selectedColumn 
-        ? { ...col, tasks: [...col.tasks, task] }
-        : col
-    );
+      const task: Task = {
+        id: uniqueId,
+        title: newTask.title,
+        description: newTask.description || undefined,
+        dueDate: newTask.dueDate || undefined,
+        assignedTo: newTask.assignedTo || undefined,
+        assignedToName: assignedMember?.name,
+        projectId: selectedProjectId || undefined,
+        color: newTask.color || 'sky',
+      };
+      console.log('Task created:', task);
 
-    setColumns(newColumns);
-    await saveTasks(newColumns, 'add');
+      const newColumns = columns.map(col => 
+        col.id === selectedColumn 
+          ? { ...col, tasks: [...col.tasks, task] }
+          : col
+      );
 
-    setIsAddTaskOpen(false);
-    setNewTask({ title: '', description: '', dueDate: '', assignedTo: '', color: 'sky' });
-    toast.success('Task added successfully');
+      console.log('Setting new columns');
+      setColumns(newColumns);
+      
+      console.log('Saving tasks to backend');
+      await saveTasks(newColumns, 'add');
+
+      console.log('Closing dialog');
+      setIsAddTaskOpen(false);
+      setNewTask({ title: '', description: '', dueDate: '', assignedTo: '', color: 'sky' });
+      toast.success('Task added successfully');
+    } catch (error) {
+      console.error('Error in handleAddTask:', error);
+      toast.error('Failed to add task');
+    }
   };
 
   const handleDeleteTask = async (taskId: string, columnId: string) => {
@@ -333,7 +382,12 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
   const totalTasks = columns.reduce((sum, col) => sum + col.tasks.length, 0);
   const doneTasks = columns.find(col => col.id === 'done')?.tasks.length || 0;
   const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+  
+  // Check if current user is owner
   const isOwner = currentUserId === projectOwnerId;
+  
+  // Debug logging
+  console.log('Owner check - currentUserId:', currentUserId, 'projectOwnerId:', projectOwnerId, 'isOwner:', isOwner, 'selectedProjectId:', selectedProjectId);
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-[#1a1d24] rounded-tl-[32px] relative">
@@ -386,57 +440,78 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
               <h2 className="text-gray-900 dark:text-white mb-6">{column.title}</h2>
 
               <div className="flex-1 space-y-4 overflow-y-auto pb-4">
-                {column.tasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    draggable
-                    onDragStart={() => handleDragStart(task, column.id)}
-                    className="p-4 cursor-move hover:shadow-md transition-shadow bg-[#f8f9fb] dark:bg-[#252930] border-[#e8ecf1] dark:border-[#3a3f4a] group relative overflow-hidden"
-                  >
-                    {/* Color accent bar */}
-                    <div 
-                      className={`absolute left-0 top-0 bottom-0 w-1 bg-${task.color || 'sky'}`}
-                    />
-                    <div className="pl-2">
-                      <div className="flex items-start justify-between">
-                        <p className="text-gray-900 dark:text-white flex-1">{task.title}</p>
-                        {isOwner && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            onClick={() => handleDeleteTask(task.id, column.id)}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        )}
-                      </div>
-                      {task.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{task.description}</p>
-                      )}
-                      <div className="flex items-center justify-between mt-3">
-                        {task.dueDate && (
-                          <p className="text-xs text-gray-500 dark:text-gray-500">Due: {task.dueDate}</p>
-                        )}
-                        {task.assignedTo && task.assignedToName && (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-xs bg-gray-200 dark:bg-gray-700">
-                                {getInitials(task.assignedToName)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              {task.assignedToName}
-                            </span>
+                <AnimatePresence mode="popLayout">
+                  {column.tasks.map((task, index) => (
+                    <motion.div
+                      key={task.id}
+                      layout
+                      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96, y: -8, transition: { duration: 0.15, ease: "easeInOut" } }}
+                      transition={{ 
+                        duration: 0.2,
+                        delay: index * 0.02,
+                        ease: "easeOut",
+                        layout: { duration: 0.2, ease: "easeInOut" }
+                      }}
+                      draggable
+                      onDragStart={(e) => {
+                        handleDragStart(task, column.id);
+                        e.currentTarget.style.opacity = '0.5';
+                      }}
+                      onDragEnd={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                      }}
+                      whileHover={{ scale: 1.015, transition: { duration: 0.15, ease: "easeOut" } }}
+                    >
+                      <Card className="p-4 cursor-move hover:shadow-md transition-shadow bg-[#f8f9fb] dark:bg-[#252930] border-[#e8ecf1] dark:border-[#3a3f4a] group relative overflow-hidden">
+                        {/* Color accent bar */}
+                        <div 
+                          className={`absolute left-0 top-0 bottom-0 w-1 bg-${task.color || 'sky'}`}
+                        />
+                        <div className="pl-2">
+                          <div className="flex items-start justify-between">
+                            <p className="text-gray-900 dark:text-white flex-1">{task.title}</p>
+                            {isOwner && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-all duration-150 ease-out text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-105"
+                                onClick={() => handleDeleteTask(task.id, column.id)}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+                          {task.description && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{task.description}</p>
+                          )}
+                          <div className="flex items-center justify-between mt-3">
+                            {task.dueDate && (
+                              <p className="text-xs text-gray-500 dark:text-gray-500">Due: {task.dueDate}</p>
+                            )}
+                            {task.assignedTo && task.assignedToName && (
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarFallback className="text-xs bg-gray-200 dark:bg-gray-700">
+                                    {getInitials(task.assignedToName)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-xs text-gray-600 dark:text-gray-400">
+                                  {task.assignedToName}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
                 
                 {isOwner && (
                   <Button
+                    type="button"
                     variant="ghost"
                     className="w-full justify-start text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-[#f8f9fb] dark:hover:bg-[#252930] border border-dashed border-gray-300 dark:border-[#3a3f4a]"
                     onClick={() => openAddTaskDialog(column.id)}
@@ -546,11 +621,11 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
 
       {/* Add Task Dialog */}
       <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-white dark:bg-[#252930] rounded-3xl border-none shadow-2xl p-8" aria-describedby={undefined}>
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[550px] bg-white dark:bg-[#252930] rounded-2xl border-none shadow-2xl p-0 overflow-hidden" aria-describedby={undefined}>
+          <DialogHeader className="px-6 pt-6 pb-4">
             <DialogTitle className="text-2xl text-gray-900 dark:text-white">Add Task</DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 py-4">
+          <div className="space-y-5 px-6 pb-6">
             <div className="space-y-3">
               <Label htmlFor="title" className="text-gray-900 dark:text-gray-200">Title</Label>
               <Input 
@@ -584,12 +659,12 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
             {projectMembers.length > 0 && (
               <div className="space-y-3">
                 <Label htmlFor="assignedTo" className="text-gray-900 dark:text-gray-200">Assign to</Label>
-                <Select value={newTask.assignedTo} onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}>
+                <Select value={newTask.assignedTo || "unassigned"} onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value === "unassigned" ? "" : value })}>
                   <SelectTrigger className="w-full h-14 bg-white dark:bg-[#1a1d24] border-gray-200 dark:border-[#3a3f4a] rounded-xl text-gray-900 dark:text-white">
                     <SelectValue placeholder="Unassigned" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-[#252930] border-gray-200 dark:border-[#3a3f4a]">
-                    <SelectItem value="" className="text-gray-900 dark:text-white">Unassigned</SelectItem>
+                    <SelectItem value="unassigned" className="text-gray-900 dark:text-white">Unassigned</SelectItem>
                     {projectMembers.map((member) => (
                       <SelectItem key={member.id} value={member.id} className="text-gray-900 dark:text-white">
                         {member.name}
@@ -601,15 +676,15 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
             )}
             <div className="space-y-3">
               <Label className="text-gray-900 dark:text-gray-200">Color</Label>
-              <div className="flex gap-3">
+              <div className="flex gap-2 flex-wrap">
                 {colorOptions.map((color) => (
                   <button
                     key={color.id}
                     type="button"
                     onClick={() => setNewTask({ ...newTask, color: color.id })}
-                    className={`w-12 h-12 rounded-xl ${color.class} transition-all hover:scale-110 ${
+                    className={`w-10 h-10 rounded-lg ${color.class} transition-all duration-200 ease-out hover:scale-105 ${
                       newTask.color === color.id 
-                        ? 'ring-4 ring-gray-400 dark:ring-gray-500 ring-offset-2 dark:ring-offset-[#252930]' 
+                        ? 'ring-3 ring-gray-400 dark:ring-gray-500 ring-offset-2 dark:ring-offset-[#252930] scale-105' 
                         : ''
                     }`}
                     title={color.label}
@@ -617,21 +692,23 @@ export function KanbanBoard({ accessToken, currentUserId }: KanbanBoardProps) {
                 ))}
               </div>
             </div>
-            <div className="flex gap-4 pt-4">
-              <Button 
-                variant="outline" 
-                className="flex-1 h-12 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50"
-                onClick={() => setIsAddTaskOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                className="flex-1 h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] text-white"
-                onClick={handleAddTask}
-              >
-                Add
-              </Button>
-            </div>
+          </div>
+          <div className="flex gap-3 px-6 pb-6 pt-4 border-t border-gray-100 dark:border-[#3a3f4a]">
+            <Button 
+              type="button"
+              variant="outline" 
+              className="flex-1 h-11 rounded-xl border-gray-200 dark:border-[#3a3f4a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1a1d24]"
+              onClick={() => setIsAddTaskOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="button"
+              className="flex-1 h-11 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] text-white"
+              onClick={handleAddTask}
+            >
+              Add
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

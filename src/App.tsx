@@ -12,6 +12,7 @@ import { ConnectionStatus } from "./components/ConnectionStatus";
 import { authService, User } from "./utils/auth";
 import { ThemeProvider } from "./utils/ThemeContext";
 import { Toaster } from "./components/ui/sonner";
+import { motion, AnimatePresence } from "motion/react";
 
 type View =
   | "kanban"
@@ -113,26 +114,55 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#d0d8e3] via-[#c8cfd9] to-[#b8c2d0] dark:from-[#0f1115] dark:via-[#1a1d24] dark:to-[#252930]">
-        <div className="text-2xl text-gray-700 dark:text-gray-300">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
+        className="h-screen flex items-center justify-center bg-gradient-to-br from-[#d0d8e3] via-[#c8cfd9] to-[#b8c2d0] dark:from-[#0f1115] dark:via-[#1a1d24] dark:to-[#252930]"
+      >
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.03, 1],
+            opacity: [0.6, 1, 0.6]
+          }}
+          transition={{ 
+            duration: 1.2, 
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="text-2xl text-gray-700 dark:text-gray-300"
+        >
           Loading...
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   }
 
   if (showLanding && !isAuthenticated) {
     return (
-      <LandingPage onGetStarted={() => setShowLanding(false)} />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
+      >
+        <LandingPage onGetStarted={() => setShowLanding(false)} />
+      </motion.div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <LoginPage
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <LoginPage
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+        />
+      </motion.div>
     );
   }
 
@@ -173,18 +203,34 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen bg-[#c8cfd9] dark:bg-[#1a1d24]">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="flex h-screen bg-[#c8cfd9] dark:bg-[#1a1d24]"
+    >
       <Sidebar
         currentView={currentView}
         onViewChange={setCurrentView}
       />
 
       <main className="flex-1 overflow-hidden relative">
-        {renderView()}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentView}
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="h-full"
+          >
+            {renderView()}
+          </motion.div>
+        </AnimatePresence>
         <ConnectionStatus accessToken={accessToken} />
       </main>
       <Toaster />
-    </div>
+    </motion.div>
   );
 }
 

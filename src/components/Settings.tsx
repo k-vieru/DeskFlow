@@ -224,7 +224,7 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
                 </div>
                 <Button
                   variant="outline"
-                  className="bg-[#d8dde6] dark:bg-[#1a1d24] hover:bg-[#c4ccd9] dark:hover:bg-[#0f1115] border-none text-gray-700 dark:text-gray-300 rounded-xl h-10 px-6 transition-all duration-200 hover:scale-[1.02]"
+                  className="bg-[#d8dde6] dark:bg-[#1a1d24] hover:bg-[#c4ccd9] dark:hover:bg-[#0f1115] border-none text-gray-700 dark:text-gray-300 rounded-xl h-10 px-6 transition-all duration-150 ease-out"
                   onClick={() => {
                     setCurrentPassword('');
                     setNewPassword('');
@@ -241,7 +241,7 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
             <Card className="p-8 bg-white dark:bg-[#252930] border-2 border-[#e8ecf1] dark:border-[#3a3f4a] rounded-2xl">
               <Button
                 variant="destructive"
-                className="w-full h-12 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+                className="w-full h-12 rounded-xl transition-all duration-150 ease-out"
                 onClick={onLogout}
               >
                 Logout
@@ -251,11 +251,11 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
         </div>
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] bg-white dark:bg-[#252930] rounded-3xl border-none shadow-2xl p-8" aria-describedby={undefined}>
-            <DialogHeader>
+          <DialogContent className="sm:max-w-[550px] bg-white dark:bg-[#252930] rounded-2xl border-none shadow-2xl p-0 overflow-hidden" aria-describedby={undefined}>
+            <DialogHeader className="px-6 pt-6 pb-4">
               <DialogTitle className="text-2xl text-gray-900 dark:text-white">Edit Account</DialogTitle>
             </DialogHeader>
-            <div className="space-y-6 py-4">
+            <div className="space-y-5 px-6 pb-6">
               {updateError && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
@@ -289,33 +289,33 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
                   disabled={isUpdating}
                 />
               </div>
-              <div className="flex gap-4 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-12 rounded-xl"
-                  onClick={() => setIsEditDialogOpen(false)}
-                  disabled={isUpdating}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1 h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4]"
-                  onClick={handleSaveAccount}
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? 'Saving...' : 'Save'}
-                </Button>
-              </div>
+            </div>
+            <div className="flex gap-3 px-6 pb-6 pt-4 border-t border-gray-100 dark:border-[#3a3f4a]">
+              <Button
+                variant="outline"
+                className="flex-1 h-11 rounded-xl border-gray-200 dark:border-[#3a3f4a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1a1d24]"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isUpdating}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 h-11 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4]"
+                onClick={handleSaveAccount}
+                disabled={isUpdating}
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
 
         <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] bg-white dark:bg-[#252930] rounded-3xl border-none shadow-2xl p-8" aria-describedby={undefined}>
-            <DialogHeader>
+          <DialogContent className="sm:max-w-[550px] bg-white dark:bg-[#252930] rounded-2xl border-none shadow-2xl p-0 overflow-hidden" aria-describedby={undefined}>
+            <DialogHeader className="px-6 pt-6 pb-4">
               <DialogTitle className="text-2xl text-gray-900 dark:text-white">Change Password</DialogTitle>
             </DialogHeader>
-            <div className="space-y-6 py-4">
+            <div className="space-y-5 px-6 pb-6">
               {passwordError && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
@@ -367,23 +367,23 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
                   disabled={isChangingPassword}
                 />
               </div>
-              <div className="flex gap-4 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-12 rounded-xl transition-all duration-200 hover:scale-[1.02]"
-                  onClick={() => setIsPasswordDialogOpen(false)}
-                  disabled={isChangingPassword}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1 h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] transition-all duration-200 hover:scale-[1.02]"
-                  onClick={handleChangePassword}
-                  disabled={isChangingPassword}
-                >
-                  {isChangingPassword ? 'Changing...' : 'Change Password'}
-                </Button>
-              </div>
+            </div>
+            <div className="flex gap-3 px-6 pb-6 pt-4 border-t border-gray-100 dark:border-[#3a3f4a]">
+              <Button
+                variant="outline"
+                className="flex-1 h-11 rounded-xl border-gray-200 dark:border-[#3a3f4a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1a1d24]"
+                onClick={() => setIsPasswordDialogOpen(false)}
+                disabled={isChangingPassword}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 h-11 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4]"
+                onClick={handleChangePassword}
+                disabled={isChangingPassword}
+              >
+                {isChangingPassword ? 'Changing...' : 'Change Password'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -422,7 +422,7 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
                 <span className="text-xl text-gray-900 dark:text-white">Manage</span>
                 <Button
                   variant="outline"
-                  className="bg-[#d8dde6] dark:bg-[#1a1d24] hover:bg-[#c4ccd9] dark:hover:bg-[#0f1115] border-none text-gray-700 dark:text-gray-300 rounded-xl h-10 px-6 transition-all duration-200 hover:scale-[1.02]"
+                  className="bg-[#d8dde6] dark:bg-[#1a1d24] hover:bg-[#c4ccd9] dark:hover:bg-[#0f1115] border-none text-gray-700 dark:text-gray-300 rounded-xl h-10 px-6 transition-all duration-150 ease-out"
                   onClick={() => {
                     setEditedName(user?.name || '');
                     setEditedEmail(user?.email || '');
@@ -435,38 +435,16 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
               </div>
             </Card>
           </div>
-
-          {/* Password */}
-          <div>
-            <h2 className="text-2xl text-gray-900 dark:text-white mb-4">Password</h2>
-            <Card className="p-6 bg-white dark:bg-[#252930] border-2 border-[#e8ecf1] dark:border-[#3a3f4a] rounded-2xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xl text-gray-900 dark:text-white">••••••••</span>
-                <Button
-                  variant="outline"
-                  className="bg-[#d8dde6] dark:bg-[#1a1d24] hover:bg-[#c4ccd9] dark:hover:bg-[#0f1115] border-none text-gray-700 dark:text-gray-300 rounded-xl h-10 px-6 transition-all duration-200 hover:scale-[1.02]"
-                  onClick={() => {
-                    setCurrentPassword('');
-                    setNewPassword('');
-                    setConfirmPassword('');
-                    setPasswordError('');
-                    setIsPasswordDialogOpen(true);
-                  }}
-                >
-                  Change
-                </Button>
-              </div>
-            </Card>
-          </div>
         </div>
       </div>
 
+      {/* Account Management Dialog for Settings view */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-white dark:bg-[#252930] rounded-3xl border-none shadow-2xl p-8" aria-describedby={undefined}>
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[550px] bg-white dark:bg-[#252930] rounded-2xl border-none shadow-2xl p-0 overflow-hidden" aria-describedby={undefined}>
+          <DialogHeader className="px-6 pt-6 pb-4">
             <DialogTitle className="text-2xl text-gray-900 dark:text-white">Manage Account</DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 py-4">
+          <div className="space-y-5 px-6 pb-6">
             {updateError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -500,114 +478,36 @@ export function Settings({ user, onLogout, onUserUpdate, initialView = 'settings
                 disabled={isUpdating}
               />
             </div>
-            <div className="flex gap-4">
-              <Button
-                variant="outline"
-                className="flex-1 h-12 rounded-xl"
-                onClick={() => {
-                  setEditedName(user?.name || '');
-                  setEditedEmail(user?.email || '');
-                  setUpdateError('');
-                }}
-                disabled={isUpdating}
-              >
-                Reset
-              </Button>
-              <Button
-                className="flex-1 h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4]"
-                onClick={handleSaveAccount}
-                disabled={isUpdating}
-              >
-                {isUpdating ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-            <div className="pt-4 border-t border-gray-200 dark:border-[#3a3f4a]">
-              <Button
-                variant="destructive"
-                className="w-full h-12 rounded-xl transition-all duration-200 hover:scale-[1.02]"
-                onClick={onLogout}
-              >
-                Logout
-              </Button>
-            </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-white dark:bg-[#252930] rounded-3xl border-none shadow-2xl p-8" aria-describedby={undefined}>
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-gray-900 dark:text-white">Change Password</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 py-4">
-            {passwordError && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{passwordError}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-3">
-              <Label htmlFor="settings-current-password" className="text-gray-900 dark:text-gray-200">Current Password</Label>
-              <Input
-                id="settings-current-password"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => {
-                  setCurrentPassword(e.target.value);
-                  setPasswordError('');
-                }}
-                className="h-14 rounded-xl bg-white dark:bg-[#1a1d24] border-gray-200 dark:border-[#3a3f4a] text-gray-900 dark:text-white"
-                placeholder="Enter current password"
-                disabled={isChangingPassword}
-              />
-            </div>
-            <div className="space-y-3">
-              <Label htmlFor="settings-new-password" className="text-gray-900 dark:text-gray-200">New Password</Label>
-              <Input
-                id="settings-new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  setPasswordError('');
-                }}
-                className="h-14 rounded-xl bg-white dark:bg-[#1a1d24] border-gray-200 dark:border-[#3a3f4a] text-gray-900 dark:text-white"
-                placeholder="Enter new password (min 6 characters)"
-                disabled={isChangingPassword}
-              />
-            </div>
-            <div className="space-y-3">
-              <Label htmlFor="settings-confirm-password" className="text-gray-900 dark:text-gray-200">Confirm New Password</Label>
-              <Input
-                id="settings-confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  setPasswordError('');
-                }}
-                className="h-14 rounded-xl bg-white dark:bg-[#1a1d24] border-gray-200 dark:border-[#3a3f4a] text-gray-900 dark:text-white"
-                placeholder="Confirm new password"
-                disabled={isChangingPassword}
-              />
-            </div>
-            <div className="flex gap-4 pt-4">
-              <Button
-                variant="outline"
-                className="flex-1 h-12 rounded-xl transition-all duration-200 hover:scale-[1.02]"
-                onClick={() => setIsPasswordDialogOpen(false)}
-                disabled={isChangingPassword}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 h-12 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4] transition-all duration-200 hover:scale-[1.02]"
-                onClick={handleChangePassword}
-                disabled={isChangingPassword}
-              >
-                {isChangingPassword ? 'Changing...' : 'Change Password'}
-              </Button>
-            </div>
+          <div className="flex gap-3 px-6 pb-4 pt-3 border-t border-gray-100 dark:border-[#3a3f4a]">
+            <Button
+              variant="outline"
+              className="flex-1 h-11 rounded-xl border-gray-200 dark:border-[#3a3f4a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1a1d24]"
+              onClick={() => {
+                setEditedName(user?.name || '');
+                setEditedEmail(user?.email || '');
+                setUpdateError('');
+              }}
+              disabled={isUpdating}
+            >
+              Reset
+            </Button>
+            <Button
+              className="flex-1 h-11 rounded-xl bg-[#4c7ce5] hover:bg-[#3d6dd4]"
+              onClick={handleSaveAccount}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+          <div className="px-6 pb-6 border-t border-gray-100 dark:border-[#3a3f4a] pt-4">
+            <Button
+              variant="destructive"
+              className="w-full h-11 rounded-xl"
+              onClick={onLogout}
+            >
+              Logout
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

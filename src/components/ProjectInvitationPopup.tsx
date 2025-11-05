@@ -157,7 +157,7 @@ export function ProjectInvitationPopup({
                 <Button
                   onClick={() => handleAccept(invitation.id)}
                   disabled={processingId === invitation.id}
-                  className="flex-1 bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white h-9 text-sm transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="flex-1 bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white h-9 text-sm transition-all duration-150 ease-out"
                 >
                   {processingId === invitation.id ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -169,7 +169,7 @@ export function ProjectInvitationPopup({
                   onClick={() => handleDecline(invitation.id)}
                   disabled={processingId === invitation.id}
                   variant="outline"
-                  className="flex-1 border-[#e8ecf1] dark:border-[#3a3f4a] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2a2f38] h-9 text-sm transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="flex-1 border-[#e8ecf1] dark:border-[#3a3f4a] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2a2f38] h-9 text-sm transition-all duration-150 ease-out"
                 >
                   Decline
                 </Button>

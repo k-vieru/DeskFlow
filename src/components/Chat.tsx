@@ -13,16 +13,25 @@ import {
   DialogDescription,
 } from './ui/dialog';
 import { Label } from './ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 import { 
   MessageCircle, 
   Send, 
   Settings, 
   Trash2,
   Clock,
-  Users
+  Users,
+  ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Message {
   id: string;
@@ -77,8 +86,8 @@ export function Chat({ accessToken, currentUserId }: ChatProps) {
           const data = await response.json();
           setProjects(data.projects || []);
           
-          // Auto-select first project
-          if (data.projects && data.projects.length > 0) {
+          // Auto-select first project if none selected
+          if (data.projects && data.projects.length > 0 && !selectedProjectId) {
             const firstProject = data.projects[0];
             setSelectedProjectId(firstProject.id);
             setIsOwner(firstProject.ownerId === currentUserId);
@@ -91,6 +100,14 @@ export function Chat({ accessToken, currentUserId }: ChatProps) {
 
     fetchProjects();
   }, [accessToken, currentUserId]);
+
+  // Update isOwner when selectedProjectId changes
+  useEffect(() => {
+    if (selectedProjectId && currentUserId) {
+      const project = projects.find(p => p.id === selectedProjectId);
+      setIsOwner(project?.ownerId === currentUserId);
+    }
+  }, [selectedProjectId, currentUserId, projects]);
 
   // Fetch messages and settings
   useEffect(() => {
@@ -284,9 +301,29 @@ export function Chat({ accessToken, currentUserId }: ChatProps) {
               <h1 className="text-2xl text-gray-900 dark:text-white">Team Chat</h1>
               <div className="flex items-center gap-2 mt-1">
                 <Users className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {selectedProject?.name || 'Project Chat'}
-                </p>
+                {/* Project Selector */}
+                {projects.length > 1 ? (
+                  <Select value={selectedProjectId || undefined} onValueChange={setSelectedProjectId}>
+                    <SelectTrigger className="h-7 w-[200px] bg-transparent border-none text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-0">
+                      <SelectValue placeholder="Select project" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-[#252930] border-[#e8ecf1] dark:border-[#3a3f4a]">
+                      {projects.map(project => (
+                        <SelectItem 
+                          key={project.id} 
+                          value={project.id}
+                          className="text-gray-900 dark:text-white hover:bg-[#f8f9fb] dark:hover:bg-[#1a1d24]"
+                        >
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {selectedProject?.name || 'Project Chat'}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -325,57 +362,78 @@ export function Chat({ accessToken, currentUserId }: ChatProps) {
       {/* Messages */}
       <ScrollArea className="flex-1 px-8 py-6">
         <div className="space-y-4 max-w-4xl mx-auto">
-          {messages.length === 0 ? (
-            <div className="text-center py-12">
-              <MessageCircle className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg text-gray-900 dark:text-white mb-2">
-                No messages yet
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Be the first to send a message to your team!
-              </p>
-            </div>
-          ) : (
-            messages.map((message) => {
-              const isCurrentUser = message.senderId === currentUserId;
-              return (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
-                >
-                  <Avatar className="w-10 h-10 flex-shrink-0">
-                    <AvatarFallback className={`${
-                      isCurrentUser 
-                        ? 'bg-gradient-to-br from-blue-500 to-purple-600' 
-                        : 'bg-gradient-to-br from-green-500 to-teal-600'
-                    } text-white`}>
-                      {message.senderName.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm text-gray-900 dark:text-white">
-                        {message.senderName}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatTimestamp(message.timestamp)}
-                      </span>
+          <AnimatePresence mode="popLayout">
+            {messages.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-center py-12"
+              >
+                <MessageCircle className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg text-gray-900 dark:text-white mb-2">
+                  No messages yet
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Be the first to send a message to your team!
+                </p>
+              </motion.div>
+            ) : (
+              messages.map((message, index) => {
+                const isCurrentUser = message.senderId === currentUserId;
+                return (
+                  <motion.div
+                    key={message.id}
+                    layout
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                    transition={{ 
+                      duration: 0.3,
+                      delay: index * 0.02
+                    }}
+                    className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: index * 0.02 + 0.1, type: "spring", stiffness: 200 }}
+                    >
+                      <Avatar className="w-10 h-10 flex-shrink-0">
+                        <AvatarFallback className={`${
+                          isCurrentUser 
+                            ? 'bg-gradient-to-br from-blue-500 to-purple-600' 
+                            : 'bg-gradient-to-br from-green-500 to-teal-600'
+                        } text-white`}>
+                          {message.senderName.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </motion.div>
+                    
+                    <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm text-gray-900 dark:text-white">
+                          {message.senderName}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatTimestamp(message.timestamp)}
+                        </span>
+                      </div>
+                      <Card className={`p-3 ${
+                        isCurrentUser
+                          ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-0'
+                          : 'bg-[#f8f9fb] dark:bg-[#252930] border-[#e8ecf1] dark:border-[#3a3f4a] text-gray-900 dark:text-white'
+                      }`}>
+                        <p className="text-sm break-words whitespace-pre-wrap">
+                          {message.content}
+                        </p>
+                      </Card>
                     </div>
-                    <Card className={`p-3 ${
-                      isCurrentUser
-                        ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-0'
-                        : 'bg-[#f8f9fb] dark:bg-[#252930] border-[#e8ecf1] dark:border-[#3a3f4a] text-gray-900 dark:text-white'
-                    }`}>
-                      <p className="text-sm break-words whitespace-pre-wrap">
-                        {message.content}
-                      </p>
-                    </Card>
-                  </div>
-                </div>
-              );
-            })
-          )}
+                  </motion.div>
+                );
+              })
+            )}
+          </AnimatePresence>
           <div ref={scrollRef} />
         </div>
       </ScrollArea>
