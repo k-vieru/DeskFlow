@@ -8,7 +8,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     name: Build Windows App
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -20,12 +20,15 @@ jobs:
         cache: 'npm'
 
     - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
 
     - name: Install dependencies
       run: |
-        npm install
-        npm install @tauri-apps/cli
+        npm ci || npm install
+        npm install --no-save @tauri-apps/cli
 
     - name: Build React app
       run: npm run build
@@ -42,7 +45,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     name: Build macOS App
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -54,12 +57,15 @@ jobs:
         cache: 'npm'
 
     - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
 
     - name: Install dependencies
       run: |
-        npm install
-        npm install @tauri-apps/cli
+        npm ci || npm install
+        npm install --no-save @tauri-apps/cli
 
     - name: Build React app
       run: npm run build
