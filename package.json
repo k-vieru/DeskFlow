@@ -1,11 +1,11 @@
 {
   "name": "DeskFlow",
-  "version": "0.1.0",
+  "version": "1.21.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npx vite build",
     "preview": "vite preview --port 4173 --host 0.0.0.0",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
