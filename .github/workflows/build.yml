@@ -29,8 +29,8 @@ jobs:
           npm -v
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
-      - name: Setup Rust
-        uses: dtolnay/setup-rust@v1
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
@@ -47,21 +47,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ${{ runner.temp }}/cargo-cache
             ~/.cargo/registry
             ~/.cargo/git
             src-tauri/target
             target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.cache-name || '' }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Install Node dev tools and Tauri CLI (Windows)
         shell: pwsh
         run: |
-          # deterministic install if lockfile exists
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
-          # ensure a local Tauri CLI is available for npx to use
           npm install --no-save @tauri-apps/cli
 
       - name: Build React app (Windows)
@@ -71,8 +68,6 @@ jobs:
       - name: Build Tauri app for Windows
         shell: pwsh
         run: |
-          # Use npx to execute the local CLI. Do not use --no-install so that npx can fetch the binary
-          # if something still isn't present (more robust in CI).
           npx @tauri-apps/cli build --release
 
       - name: Upload Windows App
@@ -103,8 +98,8 @@ jobs:
           npm -v
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
-      - name: Setup Rust
-        uses: dtolnay/setup-rust@v1
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
