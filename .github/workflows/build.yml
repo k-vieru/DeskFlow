@@ -1,134 +1,146 @@
-name: Build DeskFlow
+name: CI - Build desktop apps
 
 on:
   push:
-    branches: [ main ]
-
-concurrency:
-  group: build-desktop-${{ github.ref }}
-  cancel-in-progress: true
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
     name: Build Windows App
+    runs-on: windows-latest
     timeout-minutes: 60
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Setup Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-        profile: minimal
-        components: rustfmt
+      - name: Print Node/NPM info
+        run: |
+          node -v
+          npm -v
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
-    - name: Ensure cargo bin is on PATH (Windows)
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        Add-Content -Path $Env:GITHUB_PATH -Value "$Env:USERPROFILE\.cargo\bin"
+      - name: Setup Rust
+        uses: dtolnay/setup-rust@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: rustfmt
 
-    - name: Cache Cargo and target (Windows)
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{ env.USERPROFILE }}\.cargo\registry
-          ${{ env.USERPROFILE }}\.cargo\git
-          src-tauri/target
-        key: windows-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          windows-cargo-
+      - name: Ensure cargo bin is on PATH (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-Content -Path $Env:GITHUB_PATH -Value "$Env:USERPROFILE\.cargo\bin"
 
-    - name: Install Node dependencies & Tauri CLI (Windows)
-      shell: pwsh
-      run: |
-        # deterministic install if lockfile exists
-        npm ci || npm install
-        # install local Tauri CLI so npx will find it; no global install required
-        npm install --no-save @tauri-apps/cli
+      - name: Cache Cargo and target (Windows)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/cargo-cache
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.cache-name || '' }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-    - name: Build React app (Windows)
-      shell: pwsh
-      run: npm run build
+      - name: Install Node dev tools and Tauri CLI (Windows)
+        shell: pwsh
+        run: |
+          # deterministic install if lockfile exists
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          # ensure a local Tauri CLI is available for npx to use
+          npm install --no-save @tauri-apps/cli
 
-    - name: Build Tauri app for Windows
-      shell: pwsh
-      run: |
-        # run the locally installed Tauri CLI; --no-install prevents npx from downloading packages
-        npx --no-install @tauri-apps/cli build --release
+      - name: Build React app (Windows)
+        shell: pwsh
+        run: npm run build
 
-    - name: Upload Windows App
-      uses: actions/upload-artifact@v4
-      with:
-        name: DeskFlow-Windows
-        path: src-tauri/target/release/bundle/
+      - name: Build Tauri app for Windows
+        shell: pwsh
+        run: |
+          # Use npx to execute the local CLI. Do not use --no-install so that npx can fetch the binary
+          # if something still isn't present (more robust in CI).
+          npx @tauri-apps/cli build --release
+
+      - name: Upload Windows App
+        uses: actions/upload-artifact@v4
+        with:
+          name: deskflow-windows
+          path: src-tauri/target/release/bundle/**/*
 
   build-macos:
-    runs-on: macos-latest
     name: Build macOS App
+    runs-on: macos-latest
     timeout-minutes: 60
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Setup Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-        profile: minimal
-        components: rustfmt
+      - name: Print Node/NPM info
+        run: |
+          node -v
+          npm -v
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
-    - name: Ensure cargo bin is on PATH (macOS)
-      if: runner.os != 'Windows'
-      run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Setup Rust
+        uses: dtolnay/setup-rust@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: rustfmt
 
-    - name: Cache Cargo and target (macOS)
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          src-tauri/target
-        key: macos-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          macos-cargo-
+      - name: Ensure cargo bin is on PATH (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Install Node dependencies & Tauri CLI (macOS)
-      run: |
-        npm ci || npm install
-        npm install --no-save @tauri-apps/cli
+      - name: Cache Cargo and target (macOS)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-    - name: Build React app (macOS)
-      run: npm run build
+      - name: Install Node dev tools and Tauri CLI (macOS)
+        run: |
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          npm install --no-save @tauri-apps/cli
 
-    - name: Build Tauri app for macOS
-      run: |
-        npx --no-install @tauri-apps/cli build --release
+      - name: Build React app (macOS)
+        run: npm run build
 
-    - name: Upload macOS App
-      uses: actions/upload-artifact@v4
-      with:
-        name: DeskFlow-macOS
-        path: src-tauri/target/release/bundle/
+      - name: Build Tauri app for macOS
+        run: |
+          npx @tauri-apps/cli build --release
+
+      - name: Upload macOS App
+        uses: actions/upload-artifact@v4
+        with:
+          name: deskflow-macos
+          path: src-tauri/target/release/bundle/**/*
