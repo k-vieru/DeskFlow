@@ -25,6 +25,17 @@ jobs:
         toolchain: stable
         override: true
 
+    - name: Cache Cargo and target (Windows)
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          src-tauri/target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
     - name: Install dependencies
       run: |
         npm ci || npm install
@@ -61,6 +72,21 @@ jobs:
       with:
         toolchain: stable
         override: true
+
+    - name: Cache Cargo and target (macOS)
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          src-tauri/target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Ensure cargo bin is on PATH (macOS)
+      if: runner.os != 'Windows'
+      run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
       run: |
