@@ -8,7 +8,7 @@ import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 import { fetchWithRetry, getUserFriendlyErrorMessage } from "../utils/fetchWithRetry";
 
