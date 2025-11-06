@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from './ui/badge';
 import { Clock, Plus, X, Calendar, RefreshCw, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from './ui/alert';
-import { toast } from 'sonner';
+import { toast } from 'sonner@2.0.3';
 import { projectId } from '../utils/supabase/info';
 
 interface TimeEntry {

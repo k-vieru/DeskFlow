@@ -28,7 +28,7 @@ import {
   Radar,
   Legend,
 } from 'recharts';
-import { toast } from 'sonner';
+import { toast } from 'sonner@2.0.3';
 import { projectId } from '../utils/supabase/info';
 import { fetchWithRetry, getUserFriendlyErrorMessage } from '../utils/fetchWithRetry';
 

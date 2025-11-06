@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { authService } from '../utils/auth';
 import { useTheme } from '../utils/ThemeContext';
 import { projectId } from '../utils/supabase/info';
-import { toast } from 'sonner';
+import { toast } from 'sonner@2.0.3';
 
 interface User {
   id: string;
