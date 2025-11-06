@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npx vite build",
-    "preview": "vite preview --port 4173 --host 0.0.0.0",
+    "preview": "vite preview --port 5173 --host 0.0.0.0",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
