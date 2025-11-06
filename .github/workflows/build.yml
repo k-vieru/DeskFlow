@@ -4,13 +4,14 @@ on:
   push:
     branches: [ main ]
 
+concurrency:
+  group: build-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-windows:
     runs-on: windows-latest
     name: Build Windows App
-    concurrency:
-      group: build-desktop-${{ github.ref }}
-      cancel-in-progress: true
 
     steps:
     - name: Checkout code
@@ -34,28 +35,27 @@ jobs:
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin"
+        # Add cargo bin to PATH for the remainder of the job
+        Add-Content -Path $Env:GITHUB_PATH -Value "$Env:USERPROFILE\.cargo\bin"
 
-    - name: Cache Cargo and target (Windows)
+    - name: Cache Cargo and src-tauri/target (Windows)
       uses: actions/cache@v4
       with:
         path: |
-          ~/.cargo/registry
-          ~/.cargo/git
+          ${{ env.USERPROFILE }}\.cargo\registry
+          ${{ env.USERPROFILE }}\.cargo\git
           src-tauri/target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: windows-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
-          ${{ runner.os }}-cargo-
+          windows-cargo-
 
-    - name: Install dependencies
+    - name: Install Node dependencies & Tauri CLI (Windows)
       shell: pwsh
       run: |
-        # prefer deterministic install when lockfile exists
         npm ci || npm install
-        # install local Tauri CLI so npx can find it without a global install
         npm install --no-save @tauri-apps/cli
 
-    - name: Build React app
+    - name: Build React app (Windows)
       shell: pwsh
       run: npm run build
 
@@ -72,9 +72,6 @@ jobs:
   build-macos:
     runs-on: macos-latest
     name: Build macOS App
-    concurrency:
-      group: build-desktop-${{ github.ref }}
-      cancel-in-progress: true
 
     steps:
     - name: Checkout code
@@ -98,23 +95,23 @@ jobs:
       if: runner.os != 'Windows'
       run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Cache Cargo and target (macOS)
+    - name: Cache Cargo and src-tauri/target (macOS)
       uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry
           ~/.cargo/git
           src-tauri/target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: macos-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
-          ${{ runner.os }}-cargo-
+          macos-cargo-
 
-    - name: Install dependencies
+    - name: Install Node dependencies & Tauri CLI (macOS)
       run: |
         npm ci || npm install
         npm install --no-save @tauri-apps/cli
 
-    - name: Build React app
+    - name: Build React app (macOS)
       run: npm run build
 
     - name: Build Tauri app for macOS

@@ -1,11 +1,11 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "DeskFlow",
   "version": "0.1.0",
-  "identifier": "com.deskflow.app",
+  "identifier": "com.tauri.dev",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "http://localhost:4173",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
@@ -13,30 +13,19 @@
     "windows": [
       {
         "title": "DeskFlow",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 800,
-        "minHeight": 600,
-        "maxWidth": 1920,
-        "maxHeight": 1080,
+        "width": 800,
+        "height": 600,
         "resizable": true,
-        "minimizable": true,
-        "closable": true,
-        "fullscreen": true,
-        "maximized": true,
-        "center": true
+        "fullscreen": false
       }
     ],
     "security": {
-      "csp": "default-src 'self' https://*.supabase.co; connect-src 'self' https://*.supabase.co; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:;"
+      "csp": null
     }
   },
   "bundle": {
     "active": true,
     "targets": "all",
-    "category": "DeveloperTool",
-    "copyright": "Copyright © 2024 DeskFlow",
-    "publisher": "DeskFlow Team",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
