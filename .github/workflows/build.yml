@@ -12,10 +12,13 @@ jobs:
   build-windows:
     runs-on: windows-latest
     name: Build Windows App
+    timeout-minutes: 60
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -28,17 +31,16 @@ jobs:
       with:
         toolchain: stable
         override: true
-        components: rustfmt
         profile: minimal
+        components: rustfmt
 
     - name: Ensure cargo bin is on PATH (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        # Add cargo bin to PATH for the remainder of the job
         Add-Content -Path $Env:GITHUB_PATH -Value "$Env:USERPROFILE\.cargo\bin"
 
-    - name: Cache Cargo and src-tauri/target (Windows)
+    - name: Cache Cargo and target (Windows)
       uses: actions/cache@v4
       with:
         path: |
@@ -52,7 +54,9 @@ jobs:
     - name: Install Node dependencies & Tauri CLI (Windows)
       shell: pwsh
       run: |
+        # deterministic install if lockfile exists
         npm ci || npm install
+        # install local Tauri CLI so npx will find it; no global install required
         npm install --no-save @tauri-apps/cli
 
     - name: Build React app (Windows)
@@ -61,7 +65,9 @@ jobs:
 
     - name: Build Tauri app for Windows
       shell: pwsh
-      run: npx --no-install @tauri-apps/cli build --release
+      run: |
+        # run the locally installed Tauri CLI; --no-install prevents npx from downloading packages
+        npx --no-install @tauri-apps/cli build --release
 
     - name: Upload Windows App
       uses: actions/upload-artifact@v4
@@ -72,10 +78,13 @@ jobs:
   build-macos:
     runs-on: macos-latest
     name: Build macOS App
+    timeout-minutes: 60
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -88,14 +97,14 @@ jobs:
       with:
         toolchain: stable
         override: true
-        components: rustfmt
         profile: minimal
+        components: rustfmt
 
     - name: Ensure cargo bin is on PATH (macOS)
       if: runner.os != 'Windows'
       run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Cache Cargo and src-tauri/target (macOS)
+    - name: Cache Cargo and target (macOS)
       uses: actions/cache@v4
       with:
         path: |
@@ -115,7 +124,8 @@ jobs:
       run: npm run build
 
     - name: Build Tauri app for macOS
-      run: npx --no-install @tauri-apps/cli build --release
+      run: |
+        npx --no-install @tauri-apps/cli build --release
 
     - name: Upload macOS App
       uses: actions/upload-artifact@v4
